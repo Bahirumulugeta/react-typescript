@@ -1,9 +1,11 @@
 // Axios - an api to connection with sever app
 import axios from "axios";
+// Import type
+import { BlogCreation, BlogUpdate } from "../types/types";
 // API URL - commen for all endpoints
 const API_URL = "http://localhost:3000/api/v1";
 // This function handles add new blog
-export const addBlog = async (data: { title: string; content: string }) => {
+export const addBlog = async (data: BlogCreation) => {
   try {
     const response = await axios.post(`${API_URL}/blogs`, data);
     return response.data;
@@ -21,11 +23,7 @@ export const getBlogs = async () => {
   }
 };
 // This function handles update the blog with a new value
-export const updateBlog = async (data: {
-  id: number;
-  title: string;
-  content: string;
-}) => {
+export const updateBlog = async (data: BlogUpdate) => {
   try {
     const response = await axios.put(`${API_URL}/blogs/${data.id}`, data);
     return response.data;

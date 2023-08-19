@@ -2,7 +2,8 @@ import React, { useState } from "react";
 import { useQuery, useMutation } from "react-query";
 import { useForm } from "react-hook-form";
 import { addBlog, updateBlog, deleteBlog, getBlogs } from "../api/blog_api";
-
+import { Blog, BlogCreation, BlogUpdate } from "../types/types";
+// Funciton
 const BlogList = () => {
   // Hooks
   // Use form
@@ -11,7 +12,7 @@ const BlogList = () => {
     register,
     formState: { errors },
     setValue,
-  } = useForm();
+  } = useForm<Blog>();
 
   // Use state
   const [openCreate, setOpenCreate] = useState(false);
@@ -22,17 +23,14 @@ const BlogList = () => {
   const addMutation = useMutation(addBlog, { retry: 3 });
   const updateMutation = useMutation(updateBlog, { retry: 3 });
   const deleteMutation = useMutation(deleteBlog, { retry: 3 });
-  
+
   // Responsible for assign adefault value to all fields and open the update model
-  const handleUpdate = (blog: {
-    id: number;
-    title: string;
-    content: string;
-  }) => {
+  const handleUpdate = (blog: BlogUpdate) => {
     // Set the previous value as default
     setValue("id", blog.id);
     setValue("title", blog.title);
     setValue("content", blog.content);
+    setValue("imageUrl", blog.imageUrl);
     setOpenUpdate(true);
   };
   // Handle delete
@@ -40,16 +38,12 @@ const BlogList = () => {
     deleteMutation.mutate(id);
   };
   // Responsible for calling update method when the user clicks update button
-  const onUpdateSubmit = (data: {
-    id: number;
-    title: string;
-    content: string;
-  }) => {
+  const onUpdateSubmit = (data:BlogUpdate) => {
     updateMutation.mutate(data);
     setOpenUpdate(false);
   };
   // Responsible for calling create api when the user clicks create button
-  const onSubmit = (data: { title: string; content: string }) => {
+  const onSubmit = (data: BlogCreation) => {
     addMutation.mutate(data);
     setOpenCreate(false);
   };
@@ -59,31 +53,56 @@ const BlogList = () => {
   }
   // Return the component
   return (
-    <div>
+    <div className="w-full md:w-11/12 mx-auto">
       <button
-        className="mb-4 bg-blue-500 text-white px-4 py-2 rounded"
+        className="bg-blue-500 text-white flex justify-left my-4  px-4 py-2 rounded"
         onClick={() => setOpenCreate(true)}
       >
         Create New
       </button>
-      <div>
-        {blogs?.map((blog: any) => (
-          <div key={blog.id} className="flex items-center my-3 p-7 bg-gray-50 ">
-            <div className="flex-grow text-2xl">{blog.title}</div>
-            <div className="flex-grow">{blog.content}</div>
-            <div className="flex">
-              <button
-                onClick={() => handleDelete(blog.id)}
-                className="mr-2 bg-red-500 text-white px-2 py-1 rounded"
-              >
-                Delete
-              </button>
-              <button
-                onClick={() => handleUpdate(blog)}
-                className="bg-green-500 text-white px-2 py-1 rounded"
-              >
-                Update
-              </button>
+      <div className="grid lg:grid-cols-3 gap-6 xl:gap-x-12">
+        {blogs?.map((blog: Blog) => (
+          <div className="mb-6 lg:mb-0">
+            <div className="relative block bg-white rounded-lg shadow-lg">
+              <div className="flex">
+                <div
+                  className="relative overflow-hidden bg-no-repeat bg-cover relative overflow-hidden bg-no-repeat bg-cover shadow-lg rounded-lg mx-4 my-2"
+                  data-mdb-ripple="true"
+                  data-mdb-ripple-color="light"
+                >
+                  <img
+                    className="w-screen h-48 hover:scale-150 transition cursor-pointer duration-700"
+                    src={blog.imageUrl}
+                    alt="news img"
+                  />
+                </div>
+              </div>
+              <div className="p-6">
+                <h5 className="font-bold text-lg mb-3 hover:underline">
+                  {blog.title}
+                </h5>
+                <p className="text-gray-500 mb-4">
+                  <small>{blog.createdAt.toLocaleString()}</small>
+                </p>
+                <p className="mb-4 pb-2 text-lg">
+                  {blog.content.substring(0, 107) + " ..."}
+                </p>
+
+                <div className="flex justify-end">
+                  <button
+                    onClick={() => handleDelete(blog.id)}
+                    className="mr-2 bg-red-500 text-white px-2 py-1 rounded"
+                  >
+                    Delete
+                  </button>
+                  <button
+                    onClick={() => handleUpdate(blog)}
+                    className="bg-green-500 text-white px-2 py-1 rounded"
+                  >
+                    Update
+                  </button>
+                </div>
+              </div>
             </div>
           </div>
         ))}
@@ -132,14 +151,25 @@ const BlogList = () => {
                       {errors.title && (
                         <p className="text-red-500">Title is required</p>
                       )}
+
                       <input
                         type="text"
-                        {...register("content", {
+                        {...register("imageUrl", {
                           required: true,
                         })}
                         className="w-full block border border-primary px-2 py-3 rounded mb-4"
-                        placeholder="Content"
+                        placeholder="Image Url"
                       />
+                      {errors.imageUrl && (
+                        <p className="text-red-500">Url is required</p>
+                      )}
+                      <textarea
+                        className="w-full block border border-primary px-2 py-3 mb-4 resize-none rounded-md"
+                        placeholder="Content"
+                        {...register("content", {
+                          required: true,
+                        })}
+                      ></textarea>
                       {errors.content && (
                         <p className="text-red-500">Content is required</p>
                       )}
@@ -213,12 +243,22 @@ const BlogList = () => {
                       )}
                       <input
                         type="text"
-                        {...register("content", {
+                        {...register("imageUrl", {
                           required: true,
                         })}
                         className="w-full block border border-primary px-2 py-3 rounded mb-4"
-                        placeholder="Content"
+                        placeholder="Image Url"
                       />
+                      {errors.imageUrl && (
+                        <p className="text-red-500">Url is required</p>
+                      )}
+                      <textarea
+                        className="w-full block border border-primary px-2 py-3 mb-4 resize-none rounded-md"
+                        placeholder="Content"
+                        {...register("content", {
+                          required: true,
+                        })}
+                      ></textarea>
                       {errors.content && (
                         <p className="text-red-500">Content is required</p>
                       )}
